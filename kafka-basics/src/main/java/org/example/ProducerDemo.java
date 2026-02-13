@@ -1,8 +1,6 @@
 package org.example;
 
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +22,24 @@ public class ProducerDemo {
                 new ProducerRecord<>("demo_java", "hello world");
 
         //async
-        producer.send(producerRecord);
+        producer.send(producerRecord, new Callback(){
+            @Override
+            public void onCompletion(RecordMetadata metaData, Exception e){
+                //executes every time a rec is sucessfully sent or an exception is thrown
+                if(e == null){
+                    log.info("Received new metadata / \n" +
+                            "Topic: " + metaData.topic() + "\n" +
+                                    "Partition: " + metaData.partition() + "\n" +
+                                    "Offset: " + metaData.offset() + "\n" +
+                                    "Timestamp: " + metaData.timestamp() + "\n"
+                            
+                            );
+                }
+                else{
+                    log.error("Error while producing", e);
+                }
+            }
+        });
 
         //syn
         producer.flush();
