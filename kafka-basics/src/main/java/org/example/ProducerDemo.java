@@ -18,28 +18,31 @@ public class ProducerDemo {
         properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
         KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
-        ProducerRecord<String, String> producerRecord =
-                new ProducerRecord<>("demo_java", "hello world");
 
-        //async
-        producer.send(producerRecord, new Callback(){
-            @Override
-            public void onCompletion(RecordMetadata metaData, Exception e){
-                //executes every time a rec is sucessfully sent or an exception is thrown
-                if(e == null){
-                    log.info("Received new metadata / \n" +
-                            "Topic: " + metaData.topic() + "\n" +
-                                    "Partition: " + metaData.partition() + "\n" +
-                                    "Offset: " + metaData.offset() + "\n" +
-                                    "Timestamp: " + metaData.timestamp() + "\n"
-                            
-                            );
+        for(int i =0; i < 10;i++) {
+
+            ProducerRecord<String, String> producerRecord =
+                    new ProducerRecord<>("demo_java", "hello world "+i);
+
+            //async
+            producer.send(producerRecord, new Callback() {
+                @Override
+                public void onCompletion(RecordMetadata metaData, Exception e) {
+                    //executes every time a rec is sucessfully sent or an exception is thrown
+                    if (e == null) {
+                        log.info("Received new metadata / \n" +
+                                "Topic: " + metaData.topic() + "\n" +
+                                "Partition: " + metaData.partition() + "\n" +
+                                "Offset: " + metaData.offset() + "\n" +
+                                "Timestamp: " + metaData.timestamp() + "\n"
+
+                        );
+                    } else {
+                        log.error("Error while producing", e);
+                    }
                 }
-                else{
-                    log.error("Error while producing", e);
-                }
-            }
-        });
+            });
+        }
 
         //syn
         producer.flush();
